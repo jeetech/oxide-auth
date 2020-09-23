@@ -6,7 +6,7 @@
 
 use actix::{MailboxError, Message};
 use actix_web::{
-    dev::{HttpResponseBuilder, Payload},
+    dev::{ServiceRequest, HttpResponseBuilder, Payload},
     http::{
         header::{self, HeaderMap, InvalidHeaderValue},
         StatusCode,
@@ -238,6 +238,21 @@ impl OAuthResource {
 
         Ok(OAuthResource { auth })
     }
+
+    /// Create a new OAuthResource from a ServiceRequest
+    pub fn from_service_request(req: &ServiceRequest) -> Result<Self, WebError> {
+        let mut all_auth = req.headers().get_all(header::AUTHORIZATION);
+        let optional = all_auth.next();
+
+        let auth = if let Some(_) = all_auth.next() {
+            return Err(WebError::Authorization);
+        } else {
+            optional.and_then(|hv| hv.to_str().ok().map(str::to_owned))
+        };
+
+        Ok(OAuthResource { auth })
+    }
+
 
     /// Turn this OAuthResource into an OAuthRequest for processing
     pub fn into_request(self) -> OAuthRequest {
