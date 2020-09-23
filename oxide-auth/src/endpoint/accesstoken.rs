@@ -215,7 +215,8 @@ impl<'a, R: WebRequest + 'a> WrappedRequest<'a, R> {
 
         Ok(WrappedRequest {
             request: PhantomData,
-            body: request.urlbody().map_err(FailParse::Err)?,
+            // body: request.urlbody().map_err(FailParse::Err)?,
+            body: request.query().map_err(FailParse::Err)?,
             authorization,
             error: None,
             allow_credentials_in_body: credentials,
